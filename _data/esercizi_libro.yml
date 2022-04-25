@@ -1,0 +1,438 @@
+- numero: 1 
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      DOCENTE(<u>CFDOC</u>, NOME, COGNOME)<br/>
+      STUDENTE(<u>CFSTUD</u>, NOME, COGNOME)<br/>
+      ARGOMENTO(<u>CODARG</u>, DESCRIZIONE)<br/>
+      LEZIONE(<u>CODARG</u>, <u>DATA</u>, CFDOC, NUMSTUDENTI)
+        <div style="margin: 0 1em 0;">
+          <strong>AK</strong>: DATA, CFDOC<br/>
+          <strong>FK</strong>: CODARG <strong>REFERENCES</strong> ARGOMENTO<br/>
+          <strong>FK</strong>: CFDCC <strong>REFERENCES</strong> DOCENTE
+        </div>
+      INTERROGAZIONE(<u>CODARG</u>, <u>DATA</u>, <u>CFSTUD</u>, VOTO)
+        <div style="margin: 0 1em 0;">
+          <strong>FK</strong>: CODARG, DATA <strong>REFERENCES</strong> LEZIONE<br/>
+          <strong>FK</strong>: CFSTUD <strong>REFERENCES</strong> STUDENTE
+        </div>
+    </div>
+
+    1. selezionare il codice fiscale, il nome ed il cognome degli studenti che non sono mai stati interrogati su un argomento con descrizione 'Fisica';
+    2. selezionare il codice fiscale del docente che ha svolto lezioni su tutti gli argomenti con descrizione 'Fisica';
+    3. selezionare il codice fiscale del docente che ha sempre interrogato, cioè che durante ogni sua lezione ha fatto almeno una interrogazione
+  soluzione: |
+    1. selezionare il codice fiscale, il nome ed il cognome degli studenti che non sono mai stati interrogati su un argomento con descrizione 'Fisica'
+
+        ```
+        STUDENTE ⨝ (
+          π [CFSTUD] (STUDENTE) - π [CFSTUD] (
+            INTERROGAZIONE ⨝ σ [DESCRIZIONE = 'Fisica'] (ARGOMENTO)
+          )
+        )
+        ```
+    
+    2. selezionare il codice fiscale del docente che ha svolto lezioni su tutti gli argomenti con descrizione 'Fisica'
+
+        ```
+        π [CFDOC, CODARG] (LEZIONE) ÷ π [CODARG] σ [DESCRIZIONE = 'Fisica'] (ARGOMENTO)
+        ```
+
+    3. selezionare il codice fiscale del docente che ha sempre interrogato, cioè che durante ogni sua lezione ha fatto almeno una interrogazione
+
+        ```
+        LEZIONI_SENZA_INTERROGAZIONE = π [CODARG, DATA] (LEZIONE) - π [CODARG, DATA] INTERROGAZIONE
+        DOCENTI_NON_SEMPRE_INTERROGATO = π [CFDOC] (LEZIONE ⨝ LEZIONI_SENZA_INTERROGAZIONE)
+        DOCENTI_SEMPRE_INTERROGATO = π [CFDOC] (LEZIONE) - DOCENTI_NON_SEMPRE_INTERROGATO
+        ```
+
+        senza alias:
+
+        ```
+        π [CFDOC] (LEZIONE) - π [CFDOC] (
+          LEZIONE ⨝ (
+            π [CODARG, DATA] (LEZIONE) - π [CODARG, DATA] INTERROGAZIONE
+          )
+        )
+        ```
+- numero: 2
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      CICLISTA(<u>NOMECICLISTA</u>, NAZIONALITÀ, ETÀ)<br/>
+      GARA(<u>NOMECORSA</u>, <u>ANNO</u>, PARTENZA, ARRIVO)<br/>
+      PARTECIPA(<u>NOMECORSA</u>, <u>ANNO</u>, <u>NOMECICLISTA</u>, POSIZIONE)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: NOMECORSA, ANNO <strong>REFERENCES</strong> GARA<br/>
+        <strong>FK</strong>: NOMECICLISTA <strong>REFERENCES</strong> CICLISTA
+      </div>
+    </div>
+
+    1. selezionare i ciclisti che si sono classificati in prima posizione in una gara ciclistica partita da Milano;
+    2. selezionare il nome dei ciclisti che non si sono mai ritirati al Giro (corsa con nome Giro);
+    3. selezionare le corse per le quali in ogni edizione c'è stato almeno un ritirato;
+  soluzione: |
+    1. selezionare i ciclisti che si sono classificati in prima posizione in una gara ciclistica partita da Milano
+
+        ```
+        CICLISTA ⨝ (
+          π [NOMECICLISTA] (
+            σ [POSIZIONE = '1'] (PARTECIPA) ⨝ σ [PARTENZA = 'Milano'] (GARA) 
+          )
+        )
+        ```
+
+    2. selezionare il nome dei ciclisti che non si sono mai ritirati al Giro (corsa con nome Giro)
+
+        ```
+        π [NOMECICLISTA] (
+          σ [NOMECORSA = 'Giro'] (PARTECIPA)
+        ) - π [NOMECICLISTA] (
+          σ [POSIZIONE = 'R'] (PARTECIPA)
+        )
+
+    3. selezionare le corse per le quali in ogni edizione c'è stato almeno un ritirato
+
+        ```
+        CORSE_SENZA_RITIRATI = π [NOMECORSA, ANNO] (GARA) - π [NOMECORSA, ANNO] (σ [POSIZIONE = 'R'] (PARTECIPA))
+        π [NOMECORSA] (GARA) - π [NOMECORSA] (CORSE_SENZA_RITIRATI)
+        ```
+- numero: 3
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      QUADRO(<u>CQ</u>, AUTORE, PERIODO)<br/>
+      MOSTRA(<u>CM</u>, NOME, ANNO, ORGANIZZATORE)<br/>
+      ESPONE(<u>CM</u>, <u>CQ</u>, SALA) 
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CM <strong>REFERENCES</strong> MOSTRA<br/>
+        <strong>FK</strong>: CQ <strong>REFERENCES</strong> QUADRO
+      </div>
+    </div>
+
+    1. selezionare le sale nelle quali è stato esposto, nell'anno 1997, un quadro di Picasso;
+    2. selezionare tutti i dati dei quadri di Picasso che non sono mai stati esposti nell'anno 1997;
+    3. selezionare tutti i dati dei quadri che non sono mai stati esposti insieme ad un quadro di Picasso, cioè nella stessa mostra in cui compariva anche un quadro di Picasso
+  soluzione: |
+    1. selezionare le sale nelle quali è stato esposto, nell'anno 1997, un quadro di Picasso
+
+        ```
+        π [SALA] (ESPONE ⨝ σ [ANNO = 1997] (MOSTRA) ⨝ σ [AUTORE = 'Picasso'] (QUADRO))
+        ```
+    
+    2. selezionare tutti i dati dei quadri di Picasso che non sono mai stati esposti nell'anno 1997
+
+        ```
+        QUADRO ⨝ (
+          π [CQ] (σ [AUTORE = 'Picasso'] (QUADRO)) - π [CQ] (
+            ESPONE ⨝ σ [ANNO = 1997] (MOSTRA)
+          )
+        )
+        ```
+
+    3. selezionare tutti i dati dei quadri che non sono mai stati esposti insieme ad un quadro di Picasso, cioè nella stessa mostra in cui compariva anche un quadro di Picasso
+
+        ```
+        ESPOSIZIONI_PICASSO = π [CM, CQ] (
+          σ [AUTORE = 'Picasso'] (QUADRO) ⨝ ESPONE
+        )
+        QUADRI_ESPOSTI_CON_QUADRI_PICASSO = π [CQ] (ESPONE ⨝ [ESPONE.CM = ESPOSIZIONI_PICASSO.CM AND ESPONE.CQ ≠ ESPOSIZIONI_PICASSO.CQ] ESPOSIZIONI_PICASSO)
+        QUADRO ⨝ (
+          π [CQ] (QUADRO) - QUADRI_ESPOSTI_CON_QUADRI_PICASSO
+        )
+        ```
+- numero: 4
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      PRODOTTO(<u>CP</u>, DESCRIZIONE)<br/>
+      SOCIO(<u>CS</u>, NOME, COGNOME)<br/>
+      OFFERTA(<u>CO</u>, VALIDITÀ)<br/>
+      COMPRENDE(<u>CO</u>, <u>CP</u>, QUANTITA)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CO <strong>REFERENCES</strong> OFFERTA<br/>
+        <strong>FK</strong>: CP <strong>REFERENCES</strong> PRODOTTO
+      </div>
+      RITIRA(<u>CO</u>, <u>CS</u>, DATA) 
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CO <strong>REFERENCES</strong> OFFERTA<br/>
+        <strong>FK</strong>: CS <strong>REFERENCES</strong> SOCIO
+      </div>
+    </div>
+
+    1. selezionare il codice e la descrizione dei prodotti che non sono mai stati offerti insieme ad un prodotto con descrizione ='Uva';
+    2. selezionare il codice, nome e cognome dei soci che non hanno ritirato alcuna offerta che comprende un prodotto con descrizione 'Uva';
+    3. selezionare il codice, nome e cognome dei soci che hanno ritirato tutte le offerte che comprendono un prodotto con descrizione = 'Uva'
+  soluzione: |
+    1. selezionare il codice e la descrizione dei prodotti che non sono mai stati offerti insieme ad un prodotto con descrizione ='Uva'
+
+        ```
+        C1 = COMPRENDE
+        C2 = COMPRENDE
+        PRODOTTO ⨝ (
+          π [CP] (PRODOTTO) - π [CP] (
+            σ [DESCRIZIONE = 'Uva'] (PRODOTTO) ⨝ C1 ⨝ [C1.CO = C2.CO AND C1.CP ≠ C2.CP] C2
+          )
+        )
+        ```
+
+    2. selezionare il codice, nome e cognome dei soci che non hanno ritirato alcuna offerta che comprende un prodotto con descrizione 'Uva'
+
+        ```
+        SOCIO ⨝ (
+          π [CS] (SOCIO) - π [CS] (
+            RITIRA ⨝ COMPRENDE ⨝ σ [DESCRIZIONE = 'Uva'] (PRODOTTO)
+          )
+        )
+        ```
+
+    3. selezionare il codice, nome e cognome dei soci che hanno ritirato tutte le offerte che comprendono un prodotto con descrizione = 'Uva'
+
+        ```
+        SOCIO ⨝ (
+          π [CO, CS] (RITIRA) ÷ π [CO] (
+            COMPRENDE ⨝ σ [DESCRIZIONE = 'Uva'] (PRODOTTO)
+          )
+        )
+        ```
+- numero: 5
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      VIA(<u>CV</u>, NOME, QUARTIERE, LUNGHEZZA)<br/>
+      INC(<u>CVA</u>, <u>CVB</u>, N-VOLTE)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CVA <strong>REFERENCES</strong> VIA<br/>
+        <strong>FK</strong>: CVB <strong>REFERENCES</strong> VIA
+      </div>
+    </div>
+
+    1. selezionare le vie che incrociano almeno una via del quartiere 'Pastena';
+    2. selezionare le vie che non incrociano via 'Marco Polo';
+  soluzione: |
+    1. selezionare le vie che incrociano almeno una via del quartiere 'Pastena';
+
+        ```
+        VIA_PASTENA = σ [QUARTIERE = 'Pastena'] (VIA)
+        VIA ⨝ (
+          π [VIA.CV] (
+            (VIA ⨝ [VIA.CV = INC.CVA] INC ⨝ [INC.CVB = VIA_PASTENA.CV] VIA_PASTENA)
+              ∪
+            (VIA ⨝ [VIA.CV = INC.CVB] INC ⨝ [INC.CVA = VIA_PASTENA.CV] VIA_PASTENA)
+          )
+        )
+        ```
+
+    2. selezionare le vie che non incrociano via 'Marco Polo'
+
+        ```
+        VIA_MARCO_POLO = σ [NOME = 'Marco Polo'] (VIA)
+        VIA ⨝ (
+          π [CV] (VIA) - π [VIA.CV] (
+            (VIA ⨝ [VIA.CV = INC.CVA] INC ⨝ [INC.CVB = VIA_MARCO_POLO.CV] VIA_MARCO_POLO)
+              ∪
+            (VIA ⨝ [VIA.CV = INC.CVB] INC ⨝ [INC.CVA = VIA_MARCO_POLO.CV] VIA_MARCO_POLO)
+          )
+        )
+        ```
+- numero: 6
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      CAMPO(<u>UCAMPO</u>, TIPO, INDIRIZZO)<br/>
+      TENNISTA(<u>CF</u>, NOME, NAZIONE)<br/>
+      INCONTRO(<u>CI</u>, NCAMPO, GIOCl, GIOC2, SETl, SET2)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: NCAMPO <strong>REFERENCES</strong> CAMPO<br/>
+        <strong>FK</strong>: GIOCl <strong>REFERENCES</strong> TENNISTA<br/>
+        <strong>FK</strong>: GIOC2 <strong>REFERENCES</strong> TENNISTA
+      </div>
+    </div>
+
+    1. selezionare gli incontri disputati sull'erba (campo con tipo 'erba');
+    2. selezionare i campi in erba sui quali non c'è stato nessun incontro;
+    3. selezionare i dati dei tcnnisti vincitori di almeno una partita sull'erba;
+    4. selezionare i dati delle nazioni in cui tutti i giocatori hanno sempre vinto le partite disputate;
+  soluzione: |
+    1. selezionare gli incontri disputati sull'erba (campo con tipo 'erba')
+
+        ```
+        INCONTRO ⨝ σ [TIPO = 'erba'] (CAMPO)
+        ```
+
+    2. selezionare i campi in erba sui quali non c'è stato nessun incontro
+
+        ```
+        CAMPO ⨝ (
+          π [NCAMPO] (σ [TIPO = 'erba'] (CAMPO)) - π [NCAMPO] (INCONTRO)
+        )
+        ```
+
+    3. selezionare i dati dei tcnnisti vincitori di almeno una partita sull'erba
+
+        ```
+        (
+          (TENNISTA ⨝ [CF = GIOC1] σ [SET1 > SET2] (INCONTRO))
+            ∪
+          (TENNISTA ⨝ [CF = GIOC2] σ [SET2 > SET1] (INCONTRO))
+        ) ⨝ σ [TIPO = 'erba'] (CAMPO)
+        ```
+
+    4. selezionare i dati delle nazioni in cui tutti i giocatori hanno sempre vinto le partite disputate
+
+        ```
+        π [NAZIONE] (TENNISTA) - π [NAZIONE] (
+          (TENNISTA ⨝ [CF = GIOC1] σ [SET1 < SET2] (INCONTRO))
+            ∪
+          (TENNISTA ⨝ [CF = GIOC2] σ [SET2 < SET1] (INCONTRO))
+        )
+        ```
+- numero: 7
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      OPERATORE(<u>CODOP</u>, NOME, INDIRIZZO, QUALIFICA, COSTO-ORARIO)<br/>
+      ARTICOLO(<u>CODART</u>, DESCRIZIONE)<br/>
+      LOTTO(<u>CODART</u>, <u>CODOP</u>, TOTESEM)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CODART <strong>REFERENCES</strong> ARTICOLO<br/>
+        <strong>FK</strong>: CODOP <strong>REFERENCES</strong> OPERATORE
+      </div>
+      RECLAMO(<u>CODART</u>, <u>CODOP</u>, <u>NESEMPLARE</u>, NOMECL)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CODART, CODOP <strong>REFERENCES</strong> LOTTO
+      </div>
+    </div>
+
+    1. selezionare il codice e il nome degli operatori per i quali non esiste alcun reclamo, cioè per i quali nessun esemplare di nessun lotto da essi confezionato 
+    ha ricevuto un reclamo;
+    2. selezionare il codice degli operatori per i quali ogni lotto da essi confezionato contiene almeno un esemplare al quale si riferisce un reclamo;
+    3. selezionare il nome del cliente che ha fatto reclami per tutti gli operatori;
+  soluzione: |
+    1. selezionare il codice e il nome degli operatori per i quali non esiste alcun reclamo, cioè per i quali nessun esemplare di nessun lotto da essi confezionato 
+    ha ricevuto un reclamo;
+
+        ```
+        π [CODOP, NOME] (OPERATORE) - π [CODOP, NOME] (RECLAMO ⨝ OPERATORE)
+        ```
+
+    2. selezionare il codice degli operatori per i quali ogni lotto da essi confezionato contiene almeno un esemplare al quale si riferisce un reclamo;
+
+        ```
+        π [CODOP] (LOTTO) - π [CODOP] (
+          π [CODOP, CODART] (LOTTO) - π [CODOP, CODART] (RECLAMO)
+        )
+        ```
+
+    3. selezionare il nome del cliente che ha fatto reclami per tutti gli operatori;
+
+        ```
+        π [NOMECL, CODOP] (RECLAMO) ÷ π [CODOP] (OPERATORE)
+        ```
+- numero: 8
+  traccia: |
+    <div s
+    tyle="margin: 0 0 1em;">
+      MANIFESTAZIONE(<u>CM</u>, NOME)<br/>
+      LUOGO(<u>NOME-LUOGO</u>, INDIRIZZO, CITTA)<br/>
+      SPETTACOLO(<u>CM</u>, <u>NUM</u>, ORA-INIZIO, NOME-LU080, DATA)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CM <strong>REFERENCES</strong> MANIFESTAZIONE<br/>
+        <strong>FK</strong>: NOME-LUOGO <strong>REFERENCES</strong> LUOGO
+      </div>
+    </div>
+
+    1. selezionare il codice e il nome delle manifestazioni che non hanno interessato luoghi della città eli Modena;
+    2. selezionare i nomi dei luoghi che hanno ospitato tutte le manifestazioni (hanno ospitato almeno uno spettacolo di ciascuna manifestazione)
+  soluzione: |
+    1. selezionare il codice e il nome delle manifestazioni che non hanno interessato luoghi della città eli Modena;
+
+        ```
+        MANIFESTAZIONE ⨝ (
+          π [CM] (MANIFESTAZIONE) - π [CM] (MANIFESTAZIONE ⨝ SPETTACOLO ⨝ σ [CITTA = 'Modena'] (LUOGO))
+        )
+        ```
+
+    2. selezionare i nomi dei luoghi che hanno ospitato tutte le manifestazioni (hanno ospitato almeno uno spettacolo di ciascuna manifestazione)
+
+        ```
+        π [NOME-LUOGO, CM] (SPETTACOLO) ÷ π [CM] (MANIFESTAZIONE)
+        ```
+- numero: 9
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      FORNITORE(<u>CODF</u>, NOMEFORNITORE, CITTÀ)<br/>
+      PRODOTTO(<u>CODP</u>, DESCRIZIONE, PREZZO)<br/>
+      FORNISCE(<u>ANNO</u>, <u>CODP</u>, <u>CODF</u>, QTY)
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CODP <strong>REFERENCES</strong> PRODOTTO<br/>
+        <strong>FK</strong>: CODF <strong>REFERENCES</strong> FORNITORE
+      </div>
+    </div>
+
+    1. selezionare i prodotti che nell'anno 1995 sono stati forniti da almeno un fornitore di Modena;
+    2. selezionare i prodotti non forniti da nessun fornitore eli Modena;
+    3. selezionare i prodotti che nell'anno 1994 sono stati forniti esclusivamente da fornitori di Modena;
+  soluzione: |
+    1. selezionare i prodotti che nell'anno 1995 sono stati forniti da almeno un fornitore di Modena;
+
+        ```
+        PRODOTTO ⨝ (
+          π [CODP] (σ [ANNO = 1995] (FORNISCE) ⨝ σ CITTA = 'Modena' (FORNITORE))
+        )
+        ```
+
+    2. selezionare i prodotti non forniti da nessun fornitore eli Modena;
+
+        ```
+        PRODOTTO ⨝ (
+          π [CODP] (FORNISCE) - π [CODP] (FORNISCE ⨝ CITTA = 'Modena' (FORNITORE))
+        )
+        ```
+
+    3. selezionare i prodotti che nell'anno 1994 sono stati forniti esclusivamente da fornitori di Modena;
+
+        ```
+        PRODOTTO ⨝ (
+          π [CODP] (
+            σ [ANNO = 1995] (
+              π [CODP, ANNO] (FORNISCE ⨝ σ [CITTA = 'Modena'] (FORNITORE))
+                -
+              π [CODP, ANNO] (FORNISCE ⨝ σ [CITTA ≠ 'Modena'] (FORNITORE))
+            )
+          )
+        )
+        ```
+- numero: 10
+  traccia: |
+    <div style="margin: 0 0 1em;">
+      GARA(<u>CG</u>, NOMECAMPO, LIVELLO)<br/>
+      GIOCATOREGOLF(<u>CF</u>, NOME, NAZIONE)<br/>
+      PARTECIPA(<u>CG</u>, <u>CF</u>, PUNTEGGIO) 
+      <div style="margin: 0 1em 0;">
+        <strong>FK</strong>: CG <strong>REFERENCES</strong> GARA<br/>
+        <strong>FK</strong>: CF <strong>REFERENCES</strong> GIOCATOREGOLF
+      </div>
+    </div>
+
+    1. selezionare i dati dei giocatori di golf che hanno partecipato ad almeno una gara disputata a livello 'nazionale';
+    2. selezionare le nazioni in cui tutti i giocatori hanno ottenuto un punteggio minore o uguale a 0 nelle gare disputate;
+    3. selezionare i dati dei giocatori di golf che hanno partecipato a tutte le gare disputate a livello 'nazionale';
+  soluzione: |
+    1. selezionare i dati dei giocatori di golf che hanno partecipato ad almeno una gara disputata a livello 'nazionale'
+
+        ```
+        GIOCATOREGOLF ⨝ (
+          π [CG] (
+            GIOCATOREGOLF ⨝ PARTECIPA ⨝ σ [LIVELLO = 'nazionale'] (GARA)
+          )
+        )
+        ```
+    2. selezionare le nazioni in cui tutti i giocatori hanno ottenuto un punteggio minore o uguale a 0 nelle gare disputate
+
+        ```
+        π [NAZIONE] (GIOCATOREGOLF) - π [NAZIONE] (
+          GIOCATOREGOLF ⨝ σ [PUNTEGGIO > 0] (PARTECIPA)
+        )
+        ```
+
+    3. selezionare i dati dei giocatori di golf che hanno partecipato a tutte le gare disputate a livello 'nazionale'
+
+        ```
+        GIOCATOREGOLF ⨝ (
+          π [CF, CG] (PARTECIPA) ÷ π [CG] (σ [LIVELLO = 'nazionale'] (GARA))
+        )
+        ```

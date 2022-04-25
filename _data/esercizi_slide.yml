@@ -5,41 +5,41 @@
       CLIENTE(<u>NTESS</u>, NOME, INDIRIZZO)<br/>
       ACQUISTO(<u>CODCD</u>, <u>NTESS</u>, <u>DATA</u>, QTY)
       <div style="margin: 0 1em 0;">
-        FK: CODCD <strong>REFERENCES</strong> CD<br/>
-        FK: NTESS <strong>REFERENCES</strong> CLIENTE
+        <strong>FK</strong>: CODCD <strong>REFERENCES</strong> CD<br/>
+        <strong>FK</strong>: NTESS <strong>REFERENCES</strong> CLIENTE
       </div>
     </div>
 
     1. selezionare tutti i dati dei clienti che dopo il 1/1/1997 non hanno acquistato nessun CD prodotto dalla casa discografica 'Mute';
     2. selezionare il numero di tessera dei clienti che hanno acquistato tutti i CD dell'autore 'Depeche Mode'.
   soluzione: |
-    **Interrogazione 1**
+    1. selezionare tutti i dati dei clienti che dopo il 1/1/1997 non hanno acquistato nessun CD prodotto dalla casa discografica 'Mute'
 
-    ```
-    CLIENTE ⨝ (
-      π [NTESS] (CLIENTE) - π [NTESS] (
-        σ [DATA > '1/1/1997'] (ACQUISTO) ⨝ σ [CASADISCO = 'Mute'] (CD)
-      )  
-    )
-    ```
+        ```
+        CLIENTE ⨝ (
+          π [NTESS] (CLIENTE) - π [NTESS] (
+            σ [DATA > '1/1/1997'] (ACQUISTO) ⨝ σ [CASADISCO = 'Mute'] (CD)
+          )  
+        )
+        ```
 
-    In questo modo nel risultato sono **inclusi** anche i clienti che hanno fatto degli acquisti prima del 1997 (purchè NON abbiano acquistato un disco della casa 'Mute' dopo il
-    1997). \
-    Per eliminare dal risultato anche i clienti che hanno fatto acquisti prima del 1997:
+        In questo modo nel risultato sono **inclusi** anche i clienti che hanno fatto degli acquisti prima del 1997 (purchè NON abbiano acquistato un disco della casa 'Mute' dopo il
+        1997). \
+        Per eliminare dal risultato anche i clienti che hanno fatto acquisti prima del 1997:
 
-    ```
-    CLIENTE ⨝ (
-      π [NTESS] (σ [DATA > '1/1/1997'] (ACQUISTO)) - π [NTESS] (
-        σ [DATA > '1/1/1997'] (ACQUISTO) ⨝ σ [CASADISCO = 'Mute'] (CD)
-      )  
-    )
-    ```
+        ```
+        CLIENTE ⨝ (
+          π [NTESS] (σ [DATA > '1/1/1997'] (ACQUISTO)) - π [NTESS] (
+            σ [DATA > '1/1/1997'] (ACQUISTO) ⨝ σ [CASADISCO = 'Mute'] (CD)
+          )  
+        )
+        ```
 
-    **Interrogazione 2**
+    2. selezionare il numero di tessera dei clienti che hanno acquistato tutti i CD dell'autore 'Depeche Mode'.
 
-    ```
-    π [NTESS, CODCD] (ACQUISTO) ÷ π [CODCD] (σ [AUTORE = 'Depeche Mode'] (CD))
-    ```
+        ```
+        π [NTESS, CODCD] (ACQUISTO) ÷ π [CODCD] (σ [AUTORE = 'Depeche Mode'] (CD))
+        ```
 - slide: 21
   traccia: |
     <div style="margin: 0 0 1em;">
@@ -47,34 +47,34 @@
       PROGETTO(<u>CP</u>, NOME, ANNO, DURATA)<br/>
       LAVORA(<u>CP</u>, <u>CF</u>, MESI, RUOLO)
       <div style="margin: 0 1em 0;">
-        FK: CP <strong>REFERENCES</strong> PROGETTO<br/>
-        FK: CF <strong>REFERENCES</strong> DIPENDENTE
+        <strong>FK</strong>: CP <strong>REFERENCES</strong> PROGETTO<br/>
+        <strong>FK</strong>: CF <strong>REFERENCES</strong> DIPENDENTE
       </div>
     </div>
 
     1. selezionare i dati dei dipendenti di Modena che non hanno lavorato in alcun progetto dell'anno 1995;
     2. selezionare i dati dei dipendenti che non hanno mai lavorato insieme ad un dipendente di Modena, cioè nello stesso progetto in cui lavorava anche un dipendente di Modena.
   soluzione: |
-    **Interrogazione 1**
+    1. selezionare i dati dei dipendenti di Modena che non hanno lavorato in alcun progetto dell'anno 1995
 
-    ```
-    DIPENDENTE ⨝ (
-      π [CF] (σ [CITTA = 'Modena'] (DIPENDENTE)) - π [CF] (
-        LAVORA ⨝ σ [ANNO = 1995] (PROGETTO)
-      )
-    )
-    ```
+        ```
+        DIPENDENTE ⨝ (
+          π [CF] (σ [CITTA = 'Modena'] (DIPENDENTE)) - π [CF] (
+            LAVORA ⨝ σ [ANNO = 1995] (PROGETTO)
+          )
+        )
+        ```
 
-    **Interrogazione 2**
+    2. selezionare i dati dei dipendenti che non hanno mai lavorato insieme ad un dipendente di Modena, cioè nello stesso progetto in cui lavorava anche un dipendente di Modena
 
-    ```
-    LAVORA_2 = LAVORA
-    DIPENDENTE ⨝ (
-      π [CF] (DIPENDENTE) - π [CF] (
-        σ [CITTA = 'Modena'] (DIPENDENTE) ⨝ LAVORA ⨝ [LAVORA.CP = LAVORA_2.CP AND LAVORA.CF ≠ LAVORA_2.CF] LAVORA_2
-      )
-    )
-    ```
+        ```
+        LAVORA_2 = LAVORA
+        DIPENDENTE ⨝ (
+          π [CF] (DIPENDENTE) - π [CF] (
+            σ [CITTA = 'Modena'] (DIPENDENTE) ⨝ LAVORA ⨝ [LAVORA.CP = LAVORA_2.CP AND LAVORA.CF ≠ LAVORA_2.CF] LAVORA_2
+          )
+        )
+        ```
 - slide: 22
   traccia: |
     <div style="margin: 0 0 1em;">
@@ -82,41 +82,41 @@
       PC(<u>CP</u>,NOME,TIPO,NOMEPROPRIETARIO)<br/>
       RIPARAZIONE(<u>DATA</u>,<u>CF</u>,<u>CP</u>,ORE)
       <div style="margin: 0 1em 0;">
-        FK: CF <strong>REFERENCES</strong> TECNICO<br/>
-        FK: CP <strong>REFERENCES</strong> PC
+        <strong>FK</strong>: CF <strong>REFERENCES</strong> TECNICO<br/>
+        <strong>FK</strong>: CP <strong>REFERENCES</strong> PC
       </div>
     </div>
 
     1. selezionare i personal di tipo 'Mac' che non sono stati riparati tra il 1/7/97 e il 1/11/97;
     2. selezionare i tecnici che hanno riparato tutti i personal di tipo 'Mac'
   soluzione: |
-    **Interrogazione 1**
+    1. selezionare i personal di tipo 'Mac' che non sono stati riparati tra il 1/7/97 e il 1/11/97
 
-    ```
-    PC ⨝ (
-      π [CP] (σ [TIPO = 'Mac'] (PC)) - π [CP] (σ [DATA ≥ '1/7/97' AND DATA ≤ '1/11/97'] (RIPARAZIONE))
-    )
-    ```
+        ```
+        PC ⨝ (
+          π [CP] (σ [TIPO = 'Mac'] (PC)) - π [CP] (σ [DATA ≥ '1/7/97' AND DATA ≤ '1/11/97'] (RIPARAZIONE))
+        )
+        ```
 
-    **Interrogazione 2**
+    2. selezionare i tecnici che hanno riparato tutti i personal di tipo 'Mac'
 
-    ```
-    TECNICO ⨝ (
-      π [CF] (TECNICO) ÷ π [CF] (RIPARAZIONE ⨝ σ [TIPO = 'Mac'] (PC))
-    )
-    ```
+        ```
+        TECNICO ⨝ (
+          π [CF, CP] (RIPARAZIONE) ÷ π [CP] (σ [TIPO = 'Mac'] (PC))
+        )
+        ```
 - slide: 23
   traccia: |
     <div style="margin: 0 0 1em;">
       NAZIONE(<u>CN</u>, PRESIDENTE, CONTINENTE)<br/>
       CONFERENZA(<u>CC</u>, DESCRIZIONE, CNSEDE)
       <div style="margin: 0 1em 0;">
-        FK: CNSEDE <strong>REFERENCES</strong> NAZIONE
+        <strong>FK</strong>: CNSEDE <strong>REFERENCES</strong> NAZIONE
       </div>
       PARTECIPA(<u>CC</u>, <u>CN</u>, NUMEROP)
       <div style="margin: 0 1em 0;">
-        FK: CC <strong>REFERENCES</strong> CONFERENZA<br/>
-        FK: CN <strong>REFERENCES</strong> NAZIONE
+        <strong>FK</strong>: CC <strong>REFERENCES</strong> CONFERENZA<br/>
+        <strong>FK</strong>: CN <strong>REFERENCES</strong> NAZIONE
       </div>
     </div>
 
@@ -124,29 +124,29 @@
     2. selezionare i dati relativi alle nazioni che hanno partecipato ad una conferenza tenutasi nella nazione stessa;
     3. selezionare i dati relativi alle nazioni che non hanno mai partecipato ad una conferenza assieme ad una nazione del continente Europa
   soluzione: |
-    **Interrogazione 1**
+    1. selezionare i dati relativi alle nazioni che hanno partecipato ad una conferenza tenutasi in una nazione del continente Europa
 
-    ```
-    NAZIONE_OSPITANTE = σ [CONTINENTE = 'Europa'] (NAZIONE)
-    NAZIONE ⨝ PARTECIPA ⨝ CONFERENZA ⨝ [CONFERENZA.CNSEDE = NAZIONE_OSPITANTE.CN] NAZIONE_OSPITANTE
-    ```
+        ```
+        NAZIONE_OSPITANTE = σ [CONTINENTE = 'Europa'] (NAZIONE)
+        NAZIONE ⨝ PARTECIPA ⨝ CONFERENZA ⨝ [CONFERENZA.CNSEDE = NAZIONE_OSPITANTE.CN] NAZIONE_OSPITANTE
+        ```
 
-    **Interrogazione 2**
+    2. selezionare i dati relativi alle nazioni che hanno partecipato ad una conferenza tenutasi nella nazione stessa
 
-    ```
-    NAZIONE ⨝ PARTECIPA ⨝ [PARTECIPA.CC = CONFERENZA.CC AND CONFERENZA.CNSEDE = NAZIONE.CN] ⨝ CONFERENZA
-    ```
+        ```
+        NAZIONE ⨝ PARTECIPA ⨝ [PARTECIPA.CC = CONFERENZA.CC AND CONFERENZA.CNSEDE = NAZIONE.CN] ⨝ CONFERENZA
+        ```
 
-    **Interrogazione 3**
+    3. selezionare i dati relativi alle nazioni che non hanno mai partecipato ad una conferenza assieme ad una nazione del continente Europa
 
-    ```
-    P_1 = PARTECIPA
-    NAZIONE ⨝ (
-      π [CN] (NAZIONE) - π [CN] (
-        σ [CONTINENTE = 'Europa'] (NAZIONE) ⨝ PARTECIPA ⨝ [PARTECIPA.CC = P_1.CC AND PARTECIPA.CN ≠ P_1.CN] P_1
-      )
-    )
-    ```
+        ```
+        P_1 = PARTECIPA
+        NAZIONE ⨝ (
+          π [CN] (NAZIONE) - π [CN] (
+            σ [CONTINENTE = 'Europa'] (NAZIONE) ⨝ PARTECIPA ⨝ [PARTECIPA.CC = P_1.CC AND PARTECIPA.CN ≠ P_1.CN] P_1
+          )
+        )
+        ```
 - slide: 24
   traccia: |
     <div style="margin: 0 0 1em;">
@@ -154,26 +154,26 @@
       MOSTRA(<u>CM</u>, NOME, ANNO, ORGANIZZATORE)<br/>
       ESPONE(<u>CM</u>, <u>CQ</u>, SALA)
       <div style="margin: 0 1em 0;">
-        FK: CM <strong>REFERENCES</strong> MOSTRA<br/>
-        FK: CQ <strong>REFERENCES</strong> QUADRO
+        <strong>FK</strong>: CM <strong>REFERENCES</strong> MOSTRA<br/>
+        <strong>FK</strong>: CQ <strong>REFERENCES</strong> QUADRO
       </div>
     </div>
 
     1. selezionare tutti i dati sulle mostre nelle quali è stato esposto un quadro di Picasso nel 97 oppure nel 96;
     2. selezionare il nome della mostra nella quale sono stati esposti tutti i quadri di Picasso
   soluzione: |
-    **Interrogazione 1**
+    1. selezionare tutti i dati sulle mostre nelle quali è stato esposto un quadro di Picasso nel 97 oppure nel 96;
 
-    ```
-    σ [ANNO = 97 OR ANNO = 96] (MOSTRA) ⨝ ESPONE ⨝ σ [AUTORE = 'Picasso'] (QUADRO)
-    ```
+        ```
+        σ [ANNO = 97 OR ANNO = 96] (MOSTRA) ⨝ ESPONE ⨝ σ [AUTORE = 'Picasso'] (QUADRO)
+        ```
 
-    **Interrogazione 2**
+    2. selezionare il nome della mostra nella quale sono stati esposti tutti i quadri di Picasso
 
-    ```
-    π [NOME] (
-      MOSTRA ⨝ (
-        π [CM, CQ] (ESPONE) ÷ π [CQ] (σ [AUTORE = 'Picasso'] (QUADRO))
-      )
-    )
-    ```
+        ```
+        π [NOME] (
+          MOSTRA ⨝ (
+            π [CM, CQ] (ESPONE) ÷ π [CQ] (σ [AUTORE = 'Picasso'] (QUADRO))
+          )
+        )
+        ```
