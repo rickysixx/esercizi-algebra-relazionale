@@ -25,9 +25,9 @@
 
         ```
         STUDENTE ⨝ (
-          π [CFSTUD] (STUDENTE) - π [CFSTUD] (
-            INTERROGAZIONE ⨝ σ [DESCRIZIONE = 'Fisica'] (ARGOMENTO)
-          )
+          π [CFSTUD] (STUDENTE) 
+            - 
+          π [CFSTUD] (INTERROGAZIONE ⨝ σ [DESCRIZIONE = 'Fisica'] (ARGOMENTO))
         )
         ```
     
@@ -83,11 +83,10 @@
     2. selezionare il nome dei ciclisti che non si sono mai ritirati al Giro (corsa con nome Giro)
 
         ```
-        π [NOMECICLISTA] (
-          σ [NOMECORSA = 'Giro'] (PARTECIPA)
-        ) - π [NOMECICLISTA] (
-          σ [POSIZIONE = 'R'] (PARTECIPA)
-        )
+        π [NOMECICLISTA] (σ [NOMECORSA = 'Giro'] (PARTECIPA)) 
+          - 
+        π [NOMECICLISTA] (σ [POSIZIONE = 'R'] (PARTECIPA))
+        ```
 
     3. selezionare le corse per le quali in ogni edizione c'è stato almeno un ritirato
 
